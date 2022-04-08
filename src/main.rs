@@ -21,6 +21,9 @@ fn setup_camera(mut commands: Commands) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
 }
 
+#[derive(Component)]
+struct Ball;
+
 fn setup_ball(mut commands: Commands, windows: Res<Windows>) {
     let window = windows.get_primary().unwrap();
     let ball_radius = window.width() / SIZE_FACTOR / 1.333;
@@ -35,7 +38,7 @@ fn setup_ball(mut commands: Commands, windows: Res<Windows>) {
             0: FillMode::color(Color::WHITE)
         },
         Transform::default()
-    ));
+    )).insert(Ball);
 }
 
 #[derive(Component)]
