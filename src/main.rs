@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_prototype_lyon::entity::ShapeBundle;
 use bevy_prototype_lyon::prelude::*;
 
 const SIZE_FACTOR: f32 = 42.0;
@@ -37,6 +38,23 @@ fn setup_ball(mut commands: Commands, windows: Res<Windows>) {
     ));
 }
 
+#[derive(Component)]
+struct Score(isize);
+
+#[derive(Component)]
+enum Player {
+    Left, Right
+}
+
+#[derive(Bundle)]
+struct PlayerBundle {
+    score: Score,
+    player: Player,
+
+    #[bundle]
+    shape: ShapeBundle,
+}
+
 fn setup_paddles(mut commands: Commands, windows: Res<Windows>) {
     let window = windows.get_primary().unwrap();
     let paddle_width = window.width() / SIZE_FACTOR;
@@ -47,19 +65,29 @@ fn setup_paddles(mut commands: Commands, windows: Res<Windows>) {
         origin: RectangleOrigin::Center
     };
 
-    commands.spawn_bundle(GeometryBuilder::build_as(
-        &shape,
-        DrawMode::Fill {
-            0: FillMode::color(Color::WHITE)
-        },
-        Transform::from_xyz(-paddle_offset, 0.0, 0.0)
-    ));
+    commands.spawn_bundle(PlayerBundle {
+        score: Score(0),
+        player: Player::Left,
 
-    commands.spawn_bundle(GeometryBuilder::build_as(
-        &shape,
-        DrawMode::Fill {
-            0: FillMode::color(Color::WHITE)
-        },
-        Transform::from_xyz(paddle_offset, 0.0, 0.0)
-    ));
+        shape: GeometryBuilder::build_as(
+            &shape,
+            DrawMode::Fill {
+                0: FillMode::color(Color::WHITE)
+            },
+            Transform::from_xyz(-paddle_offset, 0.0, 0.0),
+        )
+    });
+
+    commands.spawn_bundle(PlayerBundle {
+        score: Score(0),
+        player: Player::Right,
+
+        shape: GeometryBuilder::build_as(
+            &shape,
+            DrawMode::Fill {
+                0: FillMode::color(Color::WHITE)
+            },
+            Transform::from_xyz(paddle_offset, 0.0, 0.0),
+        )
+    });
 }
