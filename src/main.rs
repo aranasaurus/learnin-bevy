@@ -5,10 +5,14 @@ use bevy_prototype_lyon::{
 };
 
 const SIZE_FACTOR: f32 = 42.0;
+const COURT_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
+const BALL_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
+const PADDLE_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
 
 fn main() {
     App::new()
         .insert_resource(Msaa { samples: 4 })
+        .insert_resource(ClearColor(Color::rgb(0.1, 0.1, 0.1)))
 
         .add_plugins(DefaultPlugins)
         .add_plugin(ShapePlugin)
@@ -51,7 +55,7 @@ fn setup_court(mut commands: Commands, windows: Res<Windows>) {
             &shape,
             DrawMode::Outlined {
                 fill_mode: FillMode::color(Color::Rgba { alpha: 0.0, red: 0.0, green: 0.0, blue: 0.0 }),
-                outline_mode: StrokeMode::new(Color::WHITE, 10.0),
+                outline_mode: StrokeMode::new(COURT_COLOR, 7.0),
             },
             Transform::default(),
         ))
@@ -89,7 +93,7 @@ fn setup_ball(mut commands: Commands, windows: Res<Windows>) {
         .spawn_bundle(GeometryBuilder::build_as(
             &shape,
             DrawMode::Fill {
-                0: FillMode::color(Color::WHITE)
+                0: FillMode::color(BALL_COLOR)
             },
             Transform::default())
         )
@@ -207,7 +211,7 @@ fn setup_paddles(mut commands: Commands, windows: Res<Windows>) {
         shape: GeometryBuilder::build_as(
             &shape,
             DrawMode::Fill {
-                0: FillMode::color(Color::WHITE)
+                0: FillMode::color(PADDLE_COLOR)
             },
             Transform::from_xyz(-paddle_offset, 0.0, 0.0),
         )
@@ -220,7 +224,7 @@ fn setup_paddles(mut commands: Commands, windows: Res<Windows>) {
         shape: GeometryBuilder::build_as(
             &shape,
             DrawMode::Fill {
-                0: FillMode::color(Color::WHITE)
+                0: FillMode::color(PADDLE_COLOR)
             },
             Transform::from_xyz(paddle_offset, 0.0, 0.0),
         )
