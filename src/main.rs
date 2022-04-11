@@ -24,7 +24,8 @@ fn main() {
 
         .add_event::<CollisionEvent>()
 
-        .add_system(ball_movement.label("movement"))
+        .add_system(paddle_control.label("controls"))
+        .add_system(ball_movement.after("controls").label("movement"))
         .add_system(court_collisions.after("movement"))
         .add_system(bounce)
 
@@ -185,10 +186,27 @@ enum Player {
     Left, Right
 }
 
+impl Player {
+    fn move_up_key(&self) -> KeyCode {
+        match self {
+            Player::Left => KeyCode::W,
+            Player::Right => KeyCode::Up
+        }
+    }
+
+    fn move_down_key(&self) -> KeyCode {
+        match self {
+            Player::Left => KeyCode::S,
+            Player::Right => KeyCode::Down
+        }
+    }
+}
+
 #[derive(Bundle)]
 struct PlayerBundle {
     score: Score,
     player: Player,
+    bounding_box: BoundingBox,
 
     #[bundle]
     shape: ShapeBundle,
@@ -207,6 +225,7 @@ fn setup_paddles(mut commands: Commands, windows: Res<Windows>) {
     commands.spawn_bundle(PlayerBundle {
         score: Score(0),
         player: Player::Left,
+        bounding_box: BoundingBox { size: Size { width: shape.extents.x, height: shape.extents.y } },
 
         shape: GeometryBuilder::build_as(
             &shape,
@@ -220,6 +239,7 @@ fn setup_paddles(mut commands: Commands, windows: Res<Windows>) {
     commands.spawn_bundle(PlayerBundle {
         score: Score(0),
         player: Player::Right,
+        bounding_box: BoundingBox { size: Size { width: shape.extents.x, height: shape.extents.y } },
 
         shape: GeometryBuilder::build_as(
             &shape,
@@ -229,4 +249,19 @@ fn setup_paddles(mut commands: Commands, windows: Res<Windows>) {
             Transform::from_xyz(paddle_offset, 0.0, 0.0),
         )
     });
+}
+
+fn paddle_control(
+    mut paddle_q: Query<(&Player, &mut Transform)>,
+    keys: Res<Input<KeyCode>>,
+    time: Res<Time>
+) {
+    let player_speed = 300.0;
+    for (player, mut transform) in paddle_q.iter_mut() {
+        if keys.pressed(player.move_up_key()) {
+            transform.translation.y += player_speed * time.delta_seconds();
+        } else if keys.pressed(player.move_down_key()) {
+            transform.translation.y -= player_speed * time.delta_seconds();
+        }
+    }
 }
