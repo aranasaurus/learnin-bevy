@@ -1,6 +1,8 @@
 use bevy::prelude::*;
-use bevy_prototype_lyon::entity::ShapeBundle;
-use bevy_prototype_lyon::prelude::*;
+use bevy_prototype_lyon::{
+    prelude::*,
+    entity::ShapeBundle
+};
 
 const SIZE_FACTOR: f32 = 42.0;
 
@@ -15,6 +17,10 @@ fn main() {
         .add_startup_system(setup_court)
         .add_startup_system(setup_ball)
         .add_startup_system(setup_paddles)
+
+        .add_system(ball_movement.label("movement"))
+        .add_system(court_collisions.after("movement"))
+
         .run();
 }
 
@@ -25,28 +31,16 @@ fn setup_camera(mut commands: Commands) {
 #[derive(Component)]
 struct Court;
 
-#[derive(Component)]
-struct Size {
-    width: f32,
-    height: f32,
-}
-impl Size {
-    fn as_vec2(&self) -> Vec2 {
-        Vec2::new(self.width, self.height)
-    }
-}
-
 fn setup_court(mut commands: Commands, windows: Res<Windows>) {
     let window = windows.get_primary().unwrap();
     let ball_radius = ball_radius(window.width());
-    let size = Size {
-        width: window.width() - ball_radius,
-        height: window.height() - ball_radius
-    };
 
     let shape = shapes::Rectangle {
         origin: RectangleOrigin::Center,
-        extents: size.as_vec2()
+        extents: Vec2::new(
+            window.width() - ball_radius,
+            window.height() - ball_radius
+        )
     };
 
     commands
@@ -58,7 +52,7 @@ fn setup_court(mut commands: Commands, windows: Res<Windows>) {
             },
             Transform::default(),
         ))
-        .insert(size)
+        .insert(BoundingBox { size: Size { width: shape.extents.x, height: shape.extents.y } })
         .insert(Court);
 }
 
@@ -69,6 +63,11 @@ struct Ball;
 struct Velocity {
     x: f32,
     y: f32
+}
+
+#[derive(Component)]
+struct BoundingBox {
+    size: Size
 }
 
 fn ball_radius(window_width: f32) -> f32 {
@@ -92,8 +91,56 @@ fn setup_ball(mut commands: Commands, windows: Res<Windows>) {
             Transform::default())
         )
         .insert(Ball)
-        .insert(Velocity { x: 10.0, y: 0.0 });
+        .insert(Velocity { x: 200.0, y: 80.0 })
+        .insert(BoundingBox {
+            size: Size { width: ball_radius * 2.0, height: ball_radius *  2.0 },
+        });
 }
+
+fn ball_movement(mut ball_q: Query<(&Velocity, &mut Transform), With<Ball>>, time: Res<Time>) {
+    let (velocity, mut transform) = ball_q.single_mut();
+
+    transform.translation.x += velocity.x * time.delta_seconds();
+    transform.translation.y += velocity.y * time.delta_seconds();
+}
+
+fn court_collisions(mut movables: Query<(&mut Transform, &mut Velocity, &BoundingBox), Without<Court>>, court_q: Query<(&Transform, &BoundingBox), With<Court>>) {
+    let (court_transform, court_box) = court_q.single();
+    let court_right = court_transform.translation.x + court_box.size.width / 2.0;
+    let court_left = court_transform.translation.x - court_box.size.width / 2.0;
+    let court_top = court_transform.translation.y + court_box.size.height / 2.0;
+    let court_bottom = court_transform.translation.y - court_box.size.height / 2.0;
+
+    for (mut transform, mut vel, bbox) in movables.iter_mut() {
+        let adjusted_right = court_right - bbox.size.width / 2.0;
+        let adjusted_left = court_left + bbox.size.width / 2.0;
+        let adjusted_top = court_top - bbox.size.height / 2.0;
+        let adjusted_bottom = court_bottom + bbox.size.height / 2.0;
+
+        if transform.translation.x >= adjusted_right {
+            transform.translation.x = adjusted_right;
+            if vel.x > 0.0 {
+                vel.x *= -1.0;
+            }
+        } else if transform.translation.x <= adjusted_left {
+            transform.translation.x = adjusted_left;
+            if vel.x < 0.0 {
+                vel.x *= -1.0;
+            }
+        }
+
+        if transform.translation.y >= adjusted_top {
+            transform.translation.y = adjusted_top;
+            if vel.y > 0.0 {
+                vel.y *= -1.0;
+            }
+        } else if transform.translation.y <= adjusted_bottom {
+            transform.translation.y = adjusted_bottom;
+            if vel.y < 0.0 {
+                vel.y *= -1.0;
+            }
+        }
+    }
 }
 
 #[derive(Component)]
