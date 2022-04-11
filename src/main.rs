@@ -18,8 +18,11 @@ fn main() {
         .add_startup_system(setup_ball)
         .add_startup_system(setup_paddles)
 
+        .add_event::<CollisionEvent>()
+
         .add_system(ball_movement.label("movement"))
         .add_system(court_collisions.after("movement"))
+        .add_system(bounce)
 
         .run();
 }
@@ -104,40 +107,67 @@ fn ball_movement(mut ball_q: Query<(&Velocity, &mut Transform), With<Ball>>, tim
     transform.translation.y += velocity.y * time.delta_seconds();
 }
 
-fn court_collisions(mut movables: Query<(&mut Transform, &mut Velocity, &BoundingBox), Without<Court>>, court_q: Query<(&Transform, &BoundingBox), With<Court>>) {
+struct CollisionEvent {
+    entity: Entity,
+    location: Vec2
+}
+
+fn court_collisions(
+    mut collision_event: EventWriter<CollisionEvent>,
+    mut movables: Query<(&mut Transform, &BoundingBox, Entity), Without<Court>>,
+    court_q: Query<(&Transform, &BoundingBox), With<Court>>
+) {
     let (court_transform, court_box) = court_q.single();
     let court_right = court_transform.translation.x + court_box.size.width / 2.0;
     let court_left = court_transform.translation.x - court_box.size.width / 2.0;
     let court_top = court_transform.translation.y + court_box.size.height / 2.0;
     let court_bottom = court_transform.translation.y - court_box.size.height / 2.0;
 
-    for (mut transform, mut vel, bbox) in movables.iter_mut() {
+    for (mut transform, bbox, entity) in movables.iter_mut() {
         let adjusted_right = court_right - bbox.size.width / 2.0;
         let adjusted_left = court_left + bbox.size.width / 2.0;
         let adjusted_top = court_top - bbox.size.height / 2.0;
         let adjusted_bottom = court_bottom + bbox.size.height / 2.0;
 
+        let mut location = Vec2::ZERO;
         if transform.translation.x >= adjusted_right {
             transform.translation.x = adjusted_right;
-            if vel.x > 0.0 {
-                vel.x *= -1.0;
-            }
+            location.x = bbox.size.width / 2.0;
         } else if transform.translation.x <= adjusted_left {
             transform.translation.x = adjusted_left;
-            if vel.x < 0.0 {
-                vel.x *= -1.0;
-            }
+            location.x = -bbox.size.width / 2.0;
         }
 
         if transform.translation.y >= adjusted_top {
             transform.translation.y = adjusted_top;
-            if vel.y > 0.0 {
-                vel.y *= -1.0;
-            }
+            location.y = bbox.size.height / 2.0;
         } else if transform.translation.y <= adjusted_bottom {
             transform.translation.y = adjusted_bottom;
-            if vel.y < 0.0 {
-                vel.y *= -1.0;
+            location.y = -bbox.size.height / 2.0;
+        }
+
+        if location != Vec2::ZERO {
+            collision_event.send(CollisionEvent { entity, location });
+        }
+    }
+}
+
+fn bounce(
+    mut bounceables: Query<&mut Velocity>,
+    mut collision_event: EventReader<CollisionEvent>
+) {
+    for collision in collision_event.iter() {
+        if let Ok(mut velocity) = bounceables.get_mut(collision.entity) {
+            if velocity.x > 0.0 && collision.location.x > 0.0 {
+                velocity.x *= -1.0;
+            } else if velocity.x < 0.0 && collision.location.x < 0.0 {
+                velocity.x *= -1.0;
+            }
+
+            if velocity.y > 0.0 && collision.location.y > 0.0 {
+                velocity.y *= -1.0;
+            } else if velocity.y < 0.0 && collision.location.y < 0.0 {
+                velocity.y *= -1.0;
             }
         }
     }
