@@ -1,4 +1,6 @@
 use bevy::prelude::*;
+use bevy::core::FixedTimestep;
+
 use bevy_prototype_lyon::{
     prelude::*,
     entity::ShapeBundle
@@ -24,9 +26,13 @@ fn main() {
 
         .add_event::<CollisionEvent>()
 
-        .add_system(paddle_control.label("controls"))
-        .add_system(ball_movement.after("controls").label("movement"))
-        .add_system(court_collisions.after("movement"))
+        .add_system_set(
+            SystemSet::new()
+                .with_run_criteria(FixedTimestep::step(1.0/60.0))
+                .with_system(paddle_control.label("controls"))
+                .with_system(ball_movement.after("controls").label("movement"))
+                .with_system(court_collisions.after("movement")),
+        )
         .add_system(bounce)
 
         .run();
