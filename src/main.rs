@@ -60,7 +60,7 @@ fn setup_court(mut commands: Commands, windows: Res<Windows>) {
             },
             Transform::default(),
         ))
-        .insert(BoundingBox { size: Size { width: shape.extents.x, height: shape.extents.y } })
+        .insert(BoundingBox { width: shape.extents.x, height: shape.extents.y })
         .insert(Court);
 }
 
@@ -75,7 +75,18 @@ struct Velocity {
 
 #[derive(Component)]
 struct BoundingBox {
-    size: Size
+    width: f32,
+    height: f32
+}
+
+impl BoundingBox {
+    fn half_width(&self) -> f32 {
+        self.width / 2.0
+    }
+
+    fn half_height(&self) -> f32 {
+        self.height / 2.0
+    }
 }
 
 fn ball_radius(window_width: f32) -> f32 {
@@ -101,7 +112,8 @@ fn setup_ball(mut commands: Commands, windows: Res<Windows>) {
         .insert(Ball)
         .insert(Velocity { x: 200.0, y: 80.0 })
         .insert(BoundingBox {
-            size: Size { width: ball_radius * 2.0, height: ball_radius *  2.0 },
+            width: ball_radius * 2.0,
+            height: ball_radius *  2.0,
         });
 }
 
@@ -123,32 +135,32 @@ fn court_collisions(
     court_q: Query<(&Transform, &BoundingBox), With<Court>>
 ) {
     let (court_transform, court_box) = court_q.single();
-    let court_right = court_transform.translation.x + court_box.size.width / 2.0;
-    let court_left = court_transform.translation.x - court_box.size.width / 2.0;
-    let court_top = court_transform.translation.y + court_box.size.height / 2.0;
-    let court_bottom = court_transform.translation.y - court_box.size.height / 2.0;
+    let court_right = court_transform.translation.x + court_box.width / 2.0;
+    let court_left = court_transform.translation.x - court_box.width / 2.0;
+    let court_top = court_transform.translation.y + court_box.height / 2.0;
+    let court_bottom = court_transform.translation.y - court_box.height / 2.0;
 
     for (mut transform, bbox, entity) in movables.iter_mut() {
-        let adjusted_right = court_right - bbox.size.width / 2.0;
-        let adjusted_left = court_left + bbox.size.width / 2.0;
-        let adjusted_top = court_top - bbox.size.height / 2.0;
-        let adjusted_bottom = court_bottom + bbox.size.height / 2.0;
+        let adjusted_right = court_right - bbox.width / 2.0;
+        let adjusted_left = court_left + bbox.width / 2.0;
+        let adjusted_top = court_top - bbox.height / 2.0;
+        let adjusted_bottom = court_bottom + bbox.height / 2.0;
 
         let mut location = Vec2::ZERO;
         if transform.translation.x >= adjusted_right {
             transform.translation.x = adjusted_right;
-            location.x = bbox.size.width / 2.0;
+            location.x = bbox.width / 2.0;
         } else if transform.translation.x <= adjusted_left {
             transform.translation.x = adjusted_left;
-            location.x = -bbox.size.width / 2.0;
+            location.x = -bbox.width / 2.0;
         }
 
         if transform.translation.y >= adjusted_top {
             transform.translation.y = adjusted_top;
-            location.y = bbox.size.height / 2.0;
+            location.y = bbox.height / 2.0;
         } else if transform.translation.y <= adjusted_bottom {
             transform.translation.y = adjusted_bottom;
-            location.y = -bbox.size.height / 2.0;
+            location.y = -bbox.height / 2.0;
         }
 
         if location != Vec2::ZERO {
@@ -225,7 +237,7 @@ fn setup_paddles(mut commands: Commands, windows: Res<Windows>) {
     commands.spawn_bundle(PlayerBundle {
         score: Score(0),
         player: Player::Left,
-        bounding_box: BoundingBox { size: Size { width: shape.extents.x, height: shape.extents.y } },
+        bounding_box: BoundingBox { width: shape.extents.x, height: shape.extents.y },
 
         shape: GeometryBuilder::build_as(
             &shape,
@@ -239,7 +251,7 @@ fn setup_paddles(mut commands: Commands, windows: Res<Windows>) {
     commands.spawn_bundle(PlayerBundle {
         score: Score(0),
         player: Player::Right,
-        bounding_box: BoundingBox { size: Size { width: shape.extents.x, height: shape.extents.y } },
+        bounding_box: BoundingBox { width: shape.extents.x, height: shape.extents.y },
 
         shape: GeometryBuilder::build_as(
             &shape,
