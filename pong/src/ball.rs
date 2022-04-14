@@ -7,7 +7,9 @@ use bevy_prototype_lyon::{
 const BALL_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
 
 #[derive(Component)]
-pub struct Ball;
+pub struct Ball {
+    pub is_active: bool
+}
 
 pub fn ball_radius(window_width: f32) -> f32 {
     window_width / SIZE_FACTOR / 1.333
@@ -29,7 +31,7 @@ pub fn setup_ball(mut commands: Commands, windows: Res<Windows>) {
             },
             Transform::default())
         )
-        .insert(Ball)
+        .insert(Ball { is_active: true })
         .insert(Velocity { x: 200.0, y: 80.0 })
         .insert(BoundingBox {
             width: ball_radius * 2.0,

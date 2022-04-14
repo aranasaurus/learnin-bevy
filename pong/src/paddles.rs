@@ -5,7 +5,7 @@ const PADDLE_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
 #[derive(Component)]
 pub struct Score(isize);
 
-#[derive(Component)]
+#[derive(Component, PartialEq, Debug)]
 pub enum Player {
     Left, Right
 }
@@ -116,6 +116,23 @@ pub fn paddle_control(
             velocity.x = -push_speed;
         } else {
             velocity.x = 0.0;
+        }
+    }
+}
+
+pub fn player_scored(
+    mut score_q: Query<(&mut Score, &Player)>,
+    mut ball_q: Query<&mut Ball>,
+    mut score_event: EventReader<ScoredEvent>
+) {
+    for scored in score_event.iter() {
+        let mut ball = ball_q.single_mut();
+        for (mut score, player) in score_q.iter_mut() {
+            if *player == scored.player {
+                score.0 += 1;
+                ball.is_active = true;
+                println!("{:?}: {}", *player, score.0);
+            }
         }
     }
 }

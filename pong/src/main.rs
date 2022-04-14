@@ -29,6 +29,10 @@ pub struct CollisionEvent {
     other_velocity: Velocity
 }
 
+pub struct ScoredEvent {
+    player: Player
+}
+
 #[derive(Component)]
 pub struct BoundingBox {
     width: f32,
@@ -69,6 +73,9 @@ fn main() {
         .add_startup_system(setup_paddles)
 
         .add_event::<CollisionEvent>()
+        .add_system(bounce)
+        .add_event::<ScoredEvent>()
+        .add_system(player_scored)
 
         .add_system_set(
             SystemSet::new()
@@ -78,7 +85,6 @@ fn main() {
                 .with_system(court_collisions.after("movement"))
                 .with_system(paddle_ball_collisions.after("movement")),
         )
-        .add_system(bounce)
 
         .run();
 }
