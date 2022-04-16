@@ -31,7 +31,7 @@ pub fn setup_court(mut commands: Commands, windows: Res<Windows>) {
 pub fn court_collisions(
     mut collision_event: EventWriter<CollisionEvent>,
     mut scored_event: EventWriter<ScoredEvent>,
-    mut ball_q: Query<(&mut Transform, &mut Velocity, &mut Ball, &BoundingBox, Entity), Without<Court>>,
+    mut ball_q: Query<(&mut Transform, &Ball, &BoundingBox, Entity), Without<Court>>,
     court_q: Query<(&Transform, &BoundingBox), With<Court>>
 ) {
     let (court_transform, court_box) = court_q.single();
@@ -40,7 +40,7 @@ pub fn court_collisions(
     let court_top = court_transform.translation.y + court_box.height / 2.0;
     let court_bottom = court_transform.translation.y - court_box.height / 2.0;
 
-    let (mut transform, mut velocity, mut ball, bbox, entity) = ball_q.single_mut();
+    let (mut transform, ball, bbox, entity) = ball_q.single_mut();
     let adjusted_right = court_right - bbox.width / 2.0;
     let adjusted_left = court_left + bbox.width / 2.0;
     let adjusted_top = court_top - bbox.height / 2.0;

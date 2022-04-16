@@ -23,6 +23,9 @@ use crate::paddles::*;
 
 pub const SIZE_FACTOR: f32 = 42.0;
 
+// TODO: Use plugins
+// TODO: Enable Vsync
+
 pub struct CollisionEvent {
     entity: Entity,
     location: Vec2,
