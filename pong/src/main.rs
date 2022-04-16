@@ -2,6 +2,7 @@ use bevy::{
     prelude::*,
     core::FixedTimestep,
     sprite::collide_aabb::{ collide, Collision },
+    window::PresentMode,
 };
 
 mod court;
@@ -19,7 +20,6 @@ use crate::paddles::*;
 pub const SIZE_FACTOR: f32 = 42.0;
 
 // TODO: Use plugins
-// TODO: Enable Vsync
 
 pub struct CollisionEvent {
     entity: Entity,
@@ -61,6 +61,11 @@ fn main() {
     App::new()
         .insert_resource(Msaa { samples: 4 })
         .insert_resource(ClearColor(Color::rgb(0.1, 0.1, 0.1)))
+        .insert_resource(WindowDescriptor{
+            title: "Pong".to_string(),
+            present_mode: PresentMode::Fifo,
+            ..default()
+        })
 
         .add_plugins(DefaultPlugins)
 
