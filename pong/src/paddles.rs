@@ -67,14 +67,14 @@ pub fn setup_paddles(mut commands: Commands, windows: Res<Windows>) {
         sprite: SpriteBundle {
             sprite: Sprite {
                 color: PADDLE_COLOR,
-                ..Sprite::default()
+                ..default()
             },
             transform: Transform {
                 translation: Vec3::new(-paddle_offset, 0.0, 2.0),
                 scale: size.extend(1.0),
-                ..Transform::default()
+                ..default()
             },
-            ..SpriteBundle::default()
+            ..default()
         }
     });
 
@@ -87,14 +87,14 @@ pub fn setup_paddles(mut commands: Commands, windows: Res<Windows>) {
         sprite: SpriteBundle {
             sprite: Sprite {
                 color: PADDLE_COLOR,
-                ..Sprite::default()
+                ..default()
             },
             transform: Transform {
                 translation: Vec3::new(paddle_offset, 0.0, 2.0),
                 scale: size.extend(1.0),
-                ..Transform::default()
+                ..default()
             },
-            ..SpriteBundle::default()
+            ..default()
         }
     });
 }

@@ -21,14 +21,14 @@ pub fn setup_ball(mut commands: Commands, windows: Res<Windows>) {
             SpriteBundle {
                 sprite: Sprite {
                     color: BALL_COLOR,
-                    ..Sprite::default()
+                    ..default()
                 },
                 transform: Transform {
                     translation: Vec2::ZERO.extend(2.0),
                     scale: size.extend(1.0),
-                    ..Transform::default()
+                    ..default()
                 },
-                ..SpriteBundle::default()
+                ..default()
             }
         )
         .insert(Ball { is_active: true })

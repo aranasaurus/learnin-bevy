@@ -18,14 +18,14 @@ pub fn setup_court(mut commands: Commands, windows: Res<Windows>) {
             SpriteBundle {
                 sprite: Sprite {
                     color: Color::rgb(0.9, 0.9, 0.9),
-                    ..Sprite::default()
+                    ..default()
                 },
                 transform: Transform {
                     translation: Vec2::ZERO.extend(1.0),
                     scale: size.extend(1.0),
-                    ..Transform::default()
+                    ..default()
                 },
-                ..SpriteBundle::default()
+                ..default()
             }
         );
 
@@ -34,14 +34,14 @@ pub fn setup_court(mut commands: Commands, windows: Res<Windows>) {
             SpriteBundle {
                 sprite: Sprite {
                     color: Color::rgb(0.1, 0.1, 0.1),
-                    ..Sprite::default()
+                    ..default()
                 },
                 transform: Transform {
                     translation: Vec2::ZERO.extend(1.0),
                     scale: inner_size,
-                    ..Transform::default()
+                    ..default()
                 },
-                ..SpriteBundle::default()
+                ..default()
             }
         )
         .insert(BoundingBox { width: inner_size.x, height: inner_size.y })
