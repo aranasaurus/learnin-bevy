@@ -144,7 +144,8 @@ fn paddle_ball_collisions(
                             other_velocity: *paddle_v,
                         }
                     )
-                }
+                },
+                Collision::Inside => {} // Shouldn't be possible...
             }
         }
     }
