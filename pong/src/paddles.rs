@@ -48,7 +48,7 @@ pub struct PlayerBundle {
     velocity: Velocity,
 
     #[bundle]
-    shape: ShapeBundle,
+    sprite: SpriteBundle,
 }
 
 pub fn setup_paddles(mut commands: Commands, windows: Res<Windows>) {
@@ -56,39 +56,46 @@ pub fn setup_paddles(mut commands: Commands, windows: Res<Windows>) {
     let paddle_width = window.width() / SIZE_FACTOR;
     let paddle_height = paddle_width * 6.0;
     let paddle_offset = window.width() / 2.0 - (paddle_width * 2.0);
-    let shape = shapes::Rectangle {
-        extents: Vec2::new(paddle_width, paddle_height),
-        origin: RectangleOrigin::Center
-    };
+    let size = Vec2::new(paddle_width, paddle_height);
 
     commands.spawn_bundle(PlayerBundle {
         score: Score(0),
         player: Player::Left,
-        bounding_box: BoundingBox { width: shape.extents.x, height: shape.extents.y },
+        bounding_box: BoundingBox { width: size.x, height: size.y },
         velocity: Velocity { x: 0.0, y: 0.0 },
 
-        shape: GeometryBuilder::build_as(
-            &shape,
-            DrawMode::Fill {
-                0: FillMode::color(PADDLE_COLOR)
+        sprite: SpriteBundle {
+            sprite: Sprite {
+                color: PADDLE_COLOR,
+                ..Sprite::default()
             },
-            Transform::from_xyz(-paddle_offset, 0.0, 0.0),
-        )
+            transform: Transform {
+                translation: Vec3::new(-paddle_offset, 0.0, 2.0),
+                scale: size.extend(1.0),
+                ..Transform::default()
+            },
+            ..SpriteBundle::default()
+        }
     });
 
     commands.spawn_bundle(PlayerBundle {
         score: Score(0),
         player: Player::Right,
-        bounding_box: BoundingBox { width: shape.extents.x, height: shape.extents.y },
+        bounding_box: BoundingBox { width: size.x, height: size.y },
         velocity: Velocity { x: 0.0, y: 0.0 },
 
-        shape: GeometryBuilder::build_as(
-            &shape,
-            DrawMode::Fill {
-                0: FillMode::color(PADDLE_COLOR)
+        sprite: SpriteBundle {
+            sprite: Sprite {
+                color: PADDLE_COLOR,
+                ..Sprite::default()
             },
-            Transform::from_xyz(paddle_offset, 0.0, 0.0),
-        )
+            transform: Transform {
+                translation: Vec3::new(paddle_offset, 0.0, 2.0),
+                scale: size.extend(1.0),
+                ..Transform::default()
+            },
+            ..SpriteBundle::default()
+        }
     });
 }
 

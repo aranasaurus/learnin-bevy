@@ -7,24 +7,44 @@ pub fn setup_court(mut commands: Commands, windows: Res<Windows>) {
     let window = windows.get_primary().unwrap();
     let ball_radius = ball_radius(window.width());
 
-    let shape = shapes::Rectangle {
-        origin: RectangleOrigin::Center,
-        extents: Vec2::new(
-            window.width() - ball_radius,
-            window.height() - ball_radius
-        )
-    };
+    let size = Vec2::new(
+        window.width() - ball_radius,
+        window.height() - ball_radius
+    );
+    let inner_size = Vec3::new(size.x - ball_radius, size.y - ball_radius, 1.0);
 
     commands
-        .spawn_bundle(GeometryBuilder::build_as(
-            &shape,
-            DrawMode::Outlined {
-                fill_mode: FillMode::color(Color::Rgba { alpha: 0.0, red: 0.0, green: 0.0, blue: 0.0 }),
-                outline_mode: StrokeMode::new(Color::rgb(0.9, 0.9, 0.9), 7.0),
-            },
-            Transform::default(),
-        ))
-        .insert(BoundingBox { width: shape.extents.x, height: shape.extents.y })
+        .spawn_bundle(
+            SpriteBundle {
+                sprite: Sprite {
+                    color: Color::rgb(0.9, 0.9, 0.9),
+                    ..Sprite::default()
+                },
+                transform: Transform {
+                    translation: Vec2::ZERO.extend(1.0),
+                    scale: size.extend(1.0),
+                    ..Transform::default()
+                },
+                ..SpriteBundle::default()
+            }
+        );
+
+    commands
+        .spawn_bundle(
+            SpriteBundle {
+                sprite: Sprite {
+                    color: Color::rgb(0.1, 0.1, 0.1),
+                    ..Sprite::default()
+                },
+                transform: Transform {
+                    translation: Vec2::ZERO.extend(1.0),
+                    scale: inner_size,
+                    ..Transform::default()
+                },
+                ..SpriteBundle::default()
+            }
+        )
+        .insert(BoundingBox { width: inner_size.x, height: inner_size.y })
         .insert(Court);
 }
 

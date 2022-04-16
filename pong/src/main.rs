@@ -4,11 +4,6 @@ use bevy::{
     sprite::collide_aabb::{ collide, Collision },
 };
 
-use bevy_prototype_lyon::{
-    prelude::*,
-    entity::ShapeBundle
-};
-
 mod court;
 mod ball;
 mod paddles;
@@ -68,7 +63,6 @@ fn main() {
         .insert_resource(ClearColor(Color::rgb(0.1, 0.1, 0.1)))
 
         .add_plugins(DefaultPlugins)
-        .add_plugin(ShapePlugin)
 
         .add_startup_system(setup_camera)
         .add_startup_system(setup_court)

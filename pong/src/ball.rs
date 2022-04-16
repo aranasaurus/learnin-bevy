@@ -1,9 +1,5 @@
 use crate::prelude::*;
 
-use bevy_prototype_lyon::{
-    prelude::*,
-};
-
 const BALL_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
 
 #[derive(Component)]
@@ -18,24 +14,28 @@ pub fn ball_radius(window_width: f32) -> f32 {
 pub fn setup_ball(mut commands: Commands, windows: Res<Windows>) {
     let window = windows.get_primary().unwrap();
     let ball_radius = ball_radius(window.width());
-    let shape = shapes::Circle {
-        center: Vec2::new(0.0, 0.0),
-        radius: ball_radius,
-    };
+    let size = Vec2::splat(ball_radius * 2.0);
 
     commands
-        .spawn_bundle(GeometryBuilder::build_as(
-            &shape,
-            DrawMode::Fill {
-                0: FillMode::color(BALL_COLOR)
-            },
-            Transform::default())
+        .spawn_bundle(
+            SpriteBundle {
+                sprite: Sprite {
+                    color: BALL_COLOR,
+                    ..Sprite::default()
+                },
+                transform: Transform {
+                    translation: Vec2::ZERO.extend(2.0),
+                    scale: size.extend(1.0),
+                    ..Transform::default()
+                },
+                ..SpriteBundle::default()
+            }
         )
         .insert(Ball { is_active: true })
         .insert(Velocity { x: 200.0, y: 80.0 })
         .insert(BoundingBox {
-            width: ball_radius * 2.0,
-            height: ball_radius *  2.0,
+            width: size.x,
+            height: size.y,
         });
 }
 
