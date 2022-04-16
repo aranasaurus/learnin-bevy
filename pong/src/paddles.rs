@@ -7,35 +7,36 @@ pub struct Score(isize);
 
 #[derive(Component, PartialEq, Debug)]
 pub enum Player {
-    Left, Right
+    Left,
+    Right,
 }
 
 impl Player {
     fn move_up_key(&self) -> KeyCode {
         match self {
             Player::Left => KeyCode::W,
-            Player::Right => KeyCode::Up
+            Player::Right => KeyCode::Up,
         }
     }
 
     fn move_down_key(&self) -> KeyCode {
         match self {
             Player::Left => KeyCode::S,
-            Player::Right => KeyCode::Down
+            Player::Right => KeyCode::Down,
         }
     }
 
     fn push_right_key(&self) -> KeyCode {
         match self {
             Player::Left => KeyCode::D,
-            Player::Right => KeyCode::Right
+            Player::Right => KeyCode::Right,
         }
     }
 
     fn push_left_key(&self) -> KeyCode {
         match self {
             Player::Left => KeyCode::A,
-            Player::Right => KeyCode::Left
+            Player::Right => KeyCode::Left,
         }
     }
 }
@@ -61,7 +62,10 @@ pub fn setup_paddles(mut commands: Commands, windows: Res<Windows>) {
     commands.spawn_bundle(PlayerBundle {
         score: Score(0),
         player: Player::Left,
-        bounding_box: BoundingBox { width: size.x, height: size.y },
+        bounding_box: BoundingBox {
+            width: size.x,
+            height: size.y,
+        },
         velocity: Velocity { x: 0.0, y: 0.0 },
 
         sprite: SpriteBundle {
@@ -75,13 +79,16 @@ pub fn setup_paddles(mut commands: Commands, windows: Res<Windows>) {
                 ..default()
             },
             ..default()
-        }
+        },
     });
 
     commands.spawn_bundle(PlayerBundle {
         score: Score(0),
         player: Player::Right,
-        bounding_box: BoundingBox { width: size.x, height: size.y },
+        bounding_box: BoundingBox {
+            width: size.x,
+            height: size.y,
+        },
         velocity: Velocity { x: 0.0, y: 0.0 },
 
         sprite: SpriteBundle {
@@ -95,14 +102,14 @@ pub fn setup_paddles(mut commands: Commands, windows: Res<Windows>) {
                 ..default()
             },
             ..default()
-        }
+        },
     });
 }
 
 pub fn paddle_control(
     mut paddle_q: Query<(&Player, &mut Transform, &mut Velocity)>,
     keys: Res<Input<KeyCode>>,
-    time: Res<Time>
+    time: Res<Time>,
 ) {
     let player_speed = 300.0;
     let push_speed = 133.0;
@@ -130,7 +137,7 @@ pub fn paddle_control(
 pub fn player_scored(
     mut score_q: Query<(&mut Score, &Player)>,
     mut ball_q: Query<&mut Ball>,
-    mut score_event: EventReader<ScoredEvent>
+    mut score_event: EventReader<ScoredEvent>,
 ) {
     for scored in score_event.iter() {
         let mut ball = ball_q.single_mut();

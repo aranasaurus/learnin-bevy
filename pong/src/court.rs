@@ -7,52 +7,50 @@ pub fn setup_court(mut commands: Commands, windows: Res<Windows>) {
     let window = windows.get_primary().unwrap();
     let ball_radius = ball_radius(window.width());
 
-    let size = Vec2::new(
-        window.width() - ball_radius,
-        window.height() - ball_radius
-    );
+    let size = Vec2::new(window.width() - ball_radius, window.height() - ball_radius);
     let inner_size = Vec3::new(size.x - ball_radius, size.y - ball_radius, 1.0);
 
-    commands
-        .spawn_bundle(
-            SpriteBundle {
-                sprite: Sprite {
-                    color: Color::rgb(0.9, 0.9, 0.9),
-                    ..default()
-                },
-                transform: Transform {
-                    translation: Vec2::ZERO.extend(1.0),
-                    scale: size.extend(1.0),
-                    ..default()
-                },
-                ..default()
-            }
-        );
+    commands.spawn_bundle(SpriteBundle {
+        sprite: Sprite {
+            color: Color::rgb(0.9, 0.9, 0.9),
+            ..default()
+        },
+        transform: Transform {
+            translation: Vec2::ZERO.extend(1.0),
+            scale: size.extend(1.0),
+            ..default()
+        },
+        ..default()
+    });
 
     commands
-        .spawn_bundle(
-            SpriteBundle {
-                sprite: Sprite {
-                    color: Color::rgb(0.1, 0.1, 0.1),
-                    ..default()
-                },
-                transform: Transform {
-                    translation: Vec2::ZERO.extend(1.0),
-                    scale: inner_size,
-                    ..default()
-                },
+        .spawn_bundle(SpriteBundle {
+            sprite: Sprite {
+                color: Color::rgb(0.1, 0.1, 0.1),
                 ..default()
-            }
-        )
-        .insert(BoundingBox { width: inner_size.x, height: inner_size.y })
+            },
+            transform: Transform {
+                translation: Vec2::ZERO.extend(1.0),
+                scale: inner_size,
+                ..default()
+            },
+            ..default()
+        })
+        .insert(BoundingBox {
+            width: inner_size.x,
+            height: inner_size.y,
+        })
         .insert(Court);
 }
 
 pub fn court_collisions(
     mut collision_event: EventWriter<CollisionEvent>,
     mut scored_event: EventWriter<ScoredEvent>,
-    mut collidables_q: Query<(&mut Transform, Option<&mut Ball>, &BoundingBox, Entity), Without<Court>>,
-    court_q: Query<(&Transform, &BoundingBox), With<Court>>
+    mut collidables_q: Query<
+        (&mut Transform, Option<&mut Ball>, &BoundingBox, Entity),
+        Without<Court>,
+    >,
+    court_q: Query<(&Transform, &BoundingBox), With<Court>>,
 ) {
     let (court_transform, court_box) = court_q.single();
     let court_right = court_transform.translation.x + court_box.width / 2.0;
@@ -73,14 +71,18 @@ pub fn court_collisions(
                 location.x = bbox.width / 2.0;
                 if ball.is_active {
                     ball.is_active = false;
-                    scored_event.send(ScoredEvent { player: Player::Left });
+                    scored_event.send(ScoredEvent {
+                        player: Player::Left,
+                    });
                 }
             } else if transform.translation.x < adjusted_left {
                 transform.translation.x = adjusted_left;
                 location.x = -bbox.width / 2.0;
                 if ball.is_active {
                     ball.is_active = false;
-                    scored_event.send(ScoredEvent { player: Player::Right });
+                    scored_event.send(ScoredEvent {
+                        player: Player::Right,
+                    });
                 }
             }
         }
@@ -94,7 +96,11 @@ pub fn court_collisions(
         }
 
         if location != Vec2::ZERO {
-            collision_event.send(CollisionEvent { entity, location, other_velocity: Velocity { x: 0.0, y: 0.0 } });
+            collision_event.send(CollisionEvent {
+                entity,
+                location,
+                other_velocity: Velocity { x: 0.0, y: 0.0 },
+            });
         }
     }
 }

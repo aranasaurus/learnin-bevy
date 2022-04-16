@@ -4,7 +4,7 @@ const BALL_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
 
 #[derive(Component)]
 pub struct Ball {
-    pub is_active: bool
+    pub is_active: bool,
 }
 
 pub fn ball_radius(window_width: f32) -> f32 {
@@ -17,20 +17,18 @@ pub fn setup_ball(mut commands: Commands, windows: Res<Windows>) {
     let size = Vec2::splat(ball_radius * 2.0);
 
     commands
-        .spawn_bundle(
-            SpriteBundle {
-                sprite: Sprite {
-                    color: BALL_COLOR,
-                    ..default()
-                },
-                transform: Transform {
-                    translation: Vec2::ZERO.extend(2.0),
-                    scale: size.extend(1.0),
-                    ..default()
-                },
+        .spawn_bundle(SpriteBundle {
+            sprite: Sprite {
+                color: BALL_COLOR,
                 ..default()
-            }
-        )
+            },
+            transform: Transform {
+                translation: Vec2::ZERO.extend(2.0),
+                scale: size.extend(1.0),
+                ..default()
+            },
+            ..default()
+        })
         .insert(Ball { is_active: true })
         .insert(Velocity { x: 200.0, y: 80.0 })
         .insert(BoundingBox {
@@ -48,7 +46,7 @@ pub fn ball_movement(mut ball_q: Query<(&Velocity, &mut Transform), With<Ball>>,
 
 pub fn bounce(
     mut bounceables: Query<&mut Velocity>,
-    mut collision_event: EventReader<CollisionEvent>
+    mut collision_event: EventReader<CollisionEvent>,
 ) {
     for collision in collision_event.iter() {
         if let Ok(mut velocity) = bounceables.get_mut(collision.entity) {
