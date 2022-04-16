@@ -5,7 +5,7 @@ pub struct Court;
 
 pub fn setup_court(mut commands: Commands, windows: Res<Windows>) {
     let window = windows.get_primary().unwrap();
-    let ball_radius = ball_radius(window.width());
+    let ball_radius = Ball::calc_radius(window.width());
 
     let size = Vec2::new(window.width() - ball_radius, window.height() - ball_radius);
     let inner_size = Vec3::new(size.x - ball_radius, size.y - ball_radius, 1.0);

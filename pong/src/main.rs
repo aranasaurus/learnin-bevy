@@ -67,21 +67,19 @@ fn main() {
             ..default()
         })
         .add_plugins(DefaultPlugins)
+        .add_plugin(BallPlugin)
         .add_startup_system(setup_camera)
         .add_startup_system(setup_court)
-        .add_startup_system(setup_ball)
         .add_startup_system(setup_paddles)
         .add_event::<CollisionEvent>()
-        .add_system(bounce)
         .add_event::<ScoredEvent>()
         .add_system(player_scored)
         .add_system_set(
             SystemSet::new()
                 .with_run_criteria(FixedTimestep::step(1.0 / 60.0))
-                .with_system(paddle_control.label("controls"))
-                .with_system(ball_movement.after("controls").label("movement"))
-                .with_system(court_collisions.after("movement"))
-                .with_system(paddle_ball_collisions.after("movement")),
+                .with_system(paddle_control)
+                .with_system(court_collisions.after(ball_movement))
+                .with_system(paddle_ball_collisions.after(ball_movement)),
         )
         .run();
 }

@@ -2,18 +2,34 @@ use crate::prelude::*;
 
 const BALL_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
 
+pub struct BallPlugin;
+
+impl Plugin for BallPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_startup_system(setup_ball)
+            .add_system(bounce)
+            .add_system_set(
+                SystemSet::new()
+                    .with_run_criteria(FixedTimestep::step(1.0 / 60.0))
+                    .with_system(ball_movement.after(paddle_control))
+            );
+    }
+}
+
 #[derive(Component)]
 pub struct Ball {
     pub is_active: bool,
 }
 
-pub fn ball_radius(window_width: f32) -> f32 {
-    window_width / SIZE_FACTOR / 1.333
+impl Ball {
+    pub fn calc_radius(window_width: f32) -> f32 {
+        window_width / SIZE_FACTOR / 1.333
+    }
 }
 
-pub fn setup_ball(mut commands: Commands, windows: Res<Windows>) {
+fn setup_ball(mut commands: Commands, windows: Res<Windows>) {
     let window = windows.get_primary().unwrap();
-    let ball_radius = ball_radius(window.width());
+    let ball_radius = Ball::calc_radius(window.width());
     let size = Vec2::splat(ball_radius * 2.0);
 
     commands
@@ -44,7 +60,7 @@ pub fn ball_movement(mut ball_q: Query<(&Velocity, &mut Transform), With<Ball>>,
     transform.translation.y += velocity.y * time.delta_seconds();
 }
 
-pub fn bounce(
+fn bounce(
     mut bounceables: Query<&mut Velocity>,
     mut collision_event: EventReader<CollisionEvent>,
 ) {
