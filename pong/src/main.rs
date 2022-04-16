@@ -19,8 +19,6 @@ mod prelude {
 
 pub const SIZE_FACTOR: f32 = 42.0;
 
-// TODO: Use plugins
-
 pub struct CollisionEvent {
     entity: Entity,
     location: Vec2,
@@ -69,11 +67,10 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugin(BallPlugin)
         .add_plugin(CourtPlugin)
+        .add_plugin(PlayerPlugin)
         .add_startup_system(setup_camera)
-        .add_startup_system(setup_paddles)
         .add_event::<CollisionEvent>()
         .add_event::<ScoredEvent>()
-        .add_system(player_scored)
         .add_system_set(
             SystemSet::new()
                 .with_run_criteria(FixedTimestep::step(1.0 / 60.0))

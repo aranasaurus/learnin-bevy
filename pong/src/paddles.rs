@@ -2,8 +2,22 @@ use crate::prelude::*;
 
 const PADDLE_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
 
+pub struct PlayerPlugin;
+
+impl Plugin for PlayerPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_startup_system(setup_paddles)
+            .add_system(player_scored)
+            .add_system_set(
+                SystemSet::new()
+                    .with_run_criteria(FixedTimestep::step(1.0 / 60.0))
+                    .with_system(paddle_control)
+            );
+    }
+}
+
 #[derive(Component)]
-pub struct Score(isize);
+struct Score(isize);
 
 #[derive(Component, PartialEq, Debug)]
 pub enum Player {
@@ -52,7 +66,7 @@ pub struct PlayerBundle {
     sprite: SpriteBundle,
 }
 
-pub fn setup_paddles(mut commands: Commands, windows: Res<Windows>) {
+fn setup_paddles(mut commands: Commands, windows: Res<Windows>) {
     let window = windows.get_primary().unwrap();
     let paddle_width = window.width() / SIZE_FACTOR;
     let paddle_height = paddle_width * 6.0;
@@ -134,7 +148,7 @@ pub fn paddle_control(
     }
 }
 
-pub fn player_scored(
+fn player_scored(
     mut score_q: Query<(&mut Score, &Player)>,
     mut ball_q: Query<&mut Ball>,
     mut score_event: EventReader<ScoredEvent>,
