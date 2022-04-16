@@ -68,8 +68,8 @@ fn main() {
         })
         .add_plugins(DefaultPlugins)
         .add_plugin(BallPlugin)
+        .add_plugin(CourtPlugin)
         .add_startup_system(setup_camera)
-        .add_startup_system(setup_court)
         .add_startup_system(setup_paddles)
         .add_event::<CollisionEvent>()
         .add_event::<ScoredEvent>()
@@ -78,7 +78,6 @@ fn main() {
             SystemSet::new()
                 .with_run_criteria(FixedTimestep::step(1.0 / 60.0))
                 .with_system(paddle_control)
-                .with_system(court_collisions.after(ball_movement))
                 .with_system(paddle_ball_collisions.after(ball_movement)),
         )
         .run();

@@ -1,9 +1,23 @@
 use crate::*;
 
-#[derive(Component)]
-pub struct Court;
+pub struct CourtPlugin;
 
-pub fn setup_court(mut commands: Commands, windows: Res<Windows>) {
+impl Plugin for CourtPlugin {
+    fn build(&self, app: &mut App) {
+        app
+            .add_startup_system(setup_court)
+            .add_system_set(
+                SystemSet::new()
+                    .with_run_criteria(FixedTimestep::step(1.0 / 60.0))
+                    .with_system(court_collisions.after(ball_movement)),
+            );
+    }
+}
+
+#[derive(Component)]
+struct Court;
+
+fn setup_court(mut commands: Commands, windows: Res<Windows>) {
     let window = windows.get_primary().unwrap();
     let ball_radius = Ball::calc_radius(window.width());
 
@@ -43,7 +57,7 @@ pub fn setup_court(mut commands: Commands, windows: Res<Windows>) {
         .insert(Court);
 }
 
-pub fn court_collisions(
+fn court_collisions(
     mut collision_event: EventWriter<CollisionEvent>,
     mut scored_event: EventWriter<ScoredEvent>,
     mut collidables_q: Query<
