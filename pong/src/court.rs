@@ -51,7 +51,7 @@ pub fn setup_court(mut commands: Commands, windows: Res<Windows>) {
 pub fn court_collisions(
     mut collision_event: EventWriter<CollisionEvent>,
     mut scored_event: EventWriter<ScoredEvent>,
-    mut ball_q: Query<(&mut Transform, &Ball, &BoundingBox, Entity), Without<Court>>,
+    mut collidables_q: Query<(&mut Transform, Option<&mut Ball>, &BoundingBox, Entity), Without<Court>>,
     court_q: Query<(&Transform, &BoundingBox), With<Court>>
 ) {
     let (court_transform, court_box) = court_q.single();
@@ -60,36 +60,41 @@ pub fn court_collisions(
     let court_top = court_transform.translation.y + court_box.height / 2.0;
     let court_bottom = court_transform.translation.y - court_box.height / 2.0;
 
-    let (mut transform, ball, bbox, entity) = ball_q.single_mut();
-    let adjusted_right = court_right - bbox.width / 2.0;
-    let adjusted_left = court_left + bbox.width / 2.0;
-    let adjusted_top = court_top - bbox.height / 2.0;
-    let adjusted_bottom = court_bottom + bbox.height / 2.0;
+    for (mut transform, opt_ball, bbox, entity) in collidables_q.iter_mut() {
+        let adjusted_right = court_right - bbox.width / 2.0;
+        let adjusted_left = court_left + bbox.width / 2.0;
+        let adjusted_top = court_top - bbox.height / 2.0;
+        let adjusted_bottom = court_bottom + bbox.height / 2.0;
 
-    let mut location = Vec2::ZERO;
-    if transform.translation.x > adjusted_right {
-        transform.translation.x = adjusted_right;
-        location.x = bbox.width / 2.0;
-        if ball.is_active {
-            scored_event.send(ScoredEvent { player: Player::Left });
+        let mut location = Vec2::ZERO;
+        if let Some(mut ball) = opt_ball {
+            if transform.translation.x > adjusted_right {
+                transform.translation.x = adjusted_right;
+                location.x = bbox.width / 2.0;
+                if ball.is_active {
+                    ball.is_active = false;
+                    scored_event.send(ScoredEvent { player: Player::Left });
+                }
+            } else if transform.translation.x < adjusted_left {
+                transform.translation.x = adjusted_left;
+                location.x = -bbox.width / 2.0;
+                if ball.is_active {
+                    ball.is_active = false;
+                    scored_event.send(ScoredEvent { player: Player::Right });
+                }
+            }
         }
-    } else if transform.translation.x < adjusted_left {
-        transform.translation.x = adjusted_left;
-        location.x = -bbox.width / 2.0;
-        if ball.is_active {
-            scored_event.send(ScoredEvent { player: Player::Right });
+
+        if transform.translation.y >= adjusted_top {
+            transform.translation.y = adjusted_top;
+            location.y = bbox.height / 2.0;
+        } else if transform.translation.y <= adjusted_bottom {
+            transform.translation.y = adjusted_bottom;
+            location.y = -bbox.height / 2.0;
         }
-    }
 
-    if transform.translation.y >= adjusted_top {
-        transform.translation.y = adjusted_top;
-        location.y = bbox.height / 2.0;
-    } else if transform.translation.y <= adjusted_bottom {
-        transform.translation.y = adjusted_bottom;
-        location.y = -bbox.height / 2.0;
-    }
-
-    if location != Vec2::ZERO {
-        collision_event.send(CollisionEvent { entity, location, other_velocity: Velocity { x: 0.0, y: 0.0 } });
+        if location != Vec2::ZERO {
+            collision_event.send(CollisionEvent { entity, location, other_velocity: Velocity { x: 0.0, y: 0.0 } });
+        }
     }
 }
