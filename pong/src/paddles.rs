@@ -7,10 +7,10 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_startup_system(setup_paddles)
-            .add_system(player_scored)
             .add_system_set(
-                SystemSet::new()
+                SystemSet::on_update(GameState::Playing)
                     .with_run_criteria(FixedTimestep::step(1.0 / 60.0))
+                    .with_system(player_scored)
                     .with_system(paddle_control)
             );
     }

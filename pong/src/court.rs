@@ -7,7 +7,7 @@ impl Plugin for CourtPlugin {
         app
             .add_startup_system(setup_court)
             .add_system_set(
-                SystemSet::new()
+                SystemSet::on_update(GameState::Playing)
                     .with_run_criteria(FixedTimestep::step(1.0 / 60.0))
                     .with_system(court_collisions.after(ball_movement)),
             );

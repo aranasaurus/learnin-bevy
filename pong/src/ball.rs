@@ -9,7 +9,7 @@ impl Plugin for BallPlugin {
         app.add_startup_system(setup_ball)
             .add_system(bounce)
             .add_system_set(
-                SystemSet::new()
+                SystemSet::on_update(GameState::Playing)
                     .with_run_criteria(FixedTimestep::step(1.0 / 60.0))
                     .with_system(ball_movement.after(paddle_control))
             );

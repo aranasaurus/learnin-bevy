@@ -19,6 +19,11 @@ mod prelude {
 
 pub const SIZE_FACTOR: f32 = 42.0;
 
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+pub enum GameState {
+    Playing
+}
+
 pub struct CollisionEvent {
     entity: Entity,
     location: Vec2,
@@ -68,11 +73,12 @@ fn main() {
         .add_plugin(BallPlugin)
         .add_plugin(CourtPlugin)
         .add_plugin(PlayerPlugin)
+        .add_state(GameState::Playing)
         .add_startup_system(setup_camera)
         .add_event::<CollisionEvent>()
         .add_event::<ScoredEvent>()
         .add_system_set(
-            SystemSet::new()
+            SystemSet::on_update(GameState::Playing)
                 .with_run_criteria(FixedTimestep::step(1.0 / 60.0))
                 .with_system(paddle_control)
                 .with_system(paddle_ball_collisions.after(ball_movement)),
