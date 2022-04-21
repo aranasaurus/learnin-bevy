@@ -23,6 +23,7 @@ pub enum GameState {
     Resetting,
     Serving,
     Playing,
+    Scored,
     GameOver
 }
 

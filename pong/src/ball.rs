@@ -19,6 +19,15 @@ impl Plugin for BallPlugin {
                     .with_system(blink_ball)
             )
             .add_system_set(
+                SystemSet::on_enter(GameState::Scored)
+                    .with_system(scored_ball_enter)
+            )
+            .add_system_set(
+                SystemSet::on_update(GameState::Scored)
+                    .with_system(scored_ball_update)
+                    .with_system(blink_ball)
+            )
+            .add_system_set(
                 SystemSet::on_enter(GameState::Resetting)
                     .with_system(reset_ball_enter)
             )
@@ -36,6 +45,7 @@ impl Plugin for BallPlugin {
 
 #[derive(Component)]
 pub struct Ball {
+    pub hold_timer: Timer,
     pub blink_timer: Timer,
     pub reset_timer: Timer
 }
@@ -87,6 +97,7 @@ fn setup_ball(mut commands: Commands, windows: Res<Windows>) {
             ..default()
         })
         .insert(Ball {
+            hold_timer: Timer::from_seconds(1.0, false),
             blink_timer: Timer::from_seconds(0.25, false),
             reset_timer: Timer::from_seconds(2.0, false)
         })
@@ -197,5 +208,32 @@ fn serve_ball(
         ball.blink_timer.pause();
         visiblity.is_visible = true;
         state.set(GameState::Playing).unwrap();
+    }
+}
+
+fn scored_ball_enter(
+    mut ball_q: Query<&mut Ball>,
+) {
+    let mut ball = ball_q.single_mut();
+    ball.hold_timer.reset();
+    ball.hold_timer.unpause();
+
+    ball.blink_timer.reset();
+    ball.blink_timer.set_duration(Duration::from_secs_f32(0.08));
+    ball.blink_timer.unpause();
+}
+
+fn scored_ball_update(
+    mut ball_q: Query<&mut Ball>,
+    mut state: ResMut<State<GameState>>,
+    time: Res<Time>,
+) {
+    let mut ball = ball_q.single_mut();
+    ball.hold_timer.tick(time.delta());
+
+    if ball.hold_timer.finished() {
+        ball.hold_timer.reset();
+        ball.hold_timer.pause();
+        state.set(GameState::Resetting).unwrap();
     }
 }

@@ -164,9 +164,9 @@ fn player_scored(
     for scored in score_event.iter() {
         for (mut score, player) in score_q.iter_mut() {
             if *player == scored.player {
-                if *state.current() != GameState::Resetting {
+                if *state.current() != GameState::Scored {
                     score.0 += 1;
-                    state.set(GameState::Resetting).unwrap();
+                    state.set(GameState::Scored).unwrap();
                     println!("{:?}: {}", *player, score.0);
                 }
             }
