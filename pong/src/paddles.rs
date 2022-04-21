@@ -96,7 +96,7 @@ fn setup_paddles(mut commands: Commands, windows: Res<Windows>) {
                 ..default()
             },
             transform: Transform {
-                translation: Vec3::new(-paddle_offset, 0.0, 2.0),
+                translation: Vec3::new(-paddle_offset, -UI_HEIGHT/2.0, 2.0),
                 scale: size.extend(1.0),
                 ..default()
             },
@@ -119,7 +119,7 @@ fn setup_paddles(mut commands: Commands, windows: Res<Windows>) {
                 ..default()
             },
             transform: Transform {
-                translation: Vec3::new(paddle_offset, 0.0, 2.0),
+                translation: Vec3::new(paddle_offset, -UI_HEIGHT/2.0, 2.0),
                 scale: size.extend(1.0),
                 ..default()
             },
@@ -159,15 +159,25 @@ pub fn paddle_control(
 fn player_scored(
     mut score_q: Query<(&mut Score, &Player)>,
     mut score_event: EventReader<ScoredEvent>,
+    mut scoreboard_q: Query<&mut Text, With<Scoreboard>>,
     mut state: ResMut<State<GameState>>,
 ) {
     for scored in score_event.iter() {
+        let mut scoreboard = scoreboard_q.single_mut();
         for (mut score, player) in score_q.iter_mut() {
             if *player == scored.player {
                 if *state.current() != GameState::Scored {
                     score.0 += 1;
                     state.set(GameState::Scored).unwrap();
-                    println!("{:?}: {}", *player, score.0);
+                }
+            }
+
+            match player {
+                Player::Left => {
+                    scoreboard.sections[0].value = score.0.to_string();
+                }
+                Player::Right => {
+                    scoreboard.sections[2].value = score.0.to_string();
                 }
             }
         }

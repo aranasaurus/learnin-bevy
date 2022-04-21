@@ -1,4 +1,5 @@
 use std::time::Duration;
+use bevy::math::Vec3Swizzles;
 use crate::prelude::*;
 
 const BALL_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
@@ -54,24 +55,6 @@ impl Ball {
     pub fn calc_radius(window_width: f32) -> f32 {
         window_width / SIZE_FACTOR / 1.333
     }
-    pub fn reset_animation(&self, name: &Name, transform: &Transform, duration_seconds: f32) -> AnimationClip {
-        // Creating the animation
-        let mut animation = AnimationClip::default();
-        // A curve can modify a single part of a transform, here the translation
-        animation.add_curve_to_path(
-            EntityPath {
-                parts: vec![name.clone()],
-            },
-            VariableCurve {
-                keyframe_timestamps: vec![0.0, duration_seconds],
-                keyframes: Keyframes::Translation(vec![
-                    transform.translation,
-                    Vec3::new(0.0, 0.0, 2.0),
-                ]),
-            },
-        );
-        animation
-    }
 }
 
 fn setup_ball(mut commands: Commands, windows: Res<Windows>) {
@@ -90,7 +73,7 @@ fn setup_ball(mut commands: Commands, windows: Res<Windows>) {
                 ..default()
             },
             transform: Transform {
-                translation: Vec3::new(0.0, 0.0, 2.0),
+                translation: Vec3::new(0.0, -UI_HEIGHT/2.0, 2.0),
                 scale: size.extend(1.0),
                 ..default()
             },
@@ -144,10 +127,25 @@ fn bounce(
 
 fn reset_ball_enter(
     mut ball_q: Query<(&mut Ball, &Transform, &Name, &mut AnimationPlayer)>,
+    court_q: Query<&Transform, (With<Court>, Without<Ball>)>,
     mut animations: ResMut<Assets<AnimationClip>>
 ) {
+    let court_center = court_q.single().translation.xy();
     let (mut ball, transform, name, mut player) = ball_q.single_mut();
-    let animation = animations.add(ball.reset_animation(name, transform, ball.reset_timer.duration().as_secs_f32()));
+    let mut clip = AnimationClip::default();
+    clip.add_curve_to_path(
+        EntityPath {
+            parts: vec![name.clone()],
+        },
+        VariableCurve {
+            keyframe_timestamps: vec![0.0, ball.reset_timer.duration().as_secs_f32()],
+            keyframes: Keyframes::Translation(vec![
+                transform.translation,
+                court_center.extend(2.0),
+            ]),
+        },
+    );
+    let animation = animations.add(clip);
     player.play(animation);
     ball.reset_timer.reset();
     ball.reset_timer.unpause();

@@ -21,14 +21,15 @@ impl Plugin for CourtPlugin {
 }
 
 #[derive(Component)]
-struct Court;
+pub struct Court;
 
 fn setup_court(mut commands: Commands, windows: Res<Windows>) {
     let window = windows.get_primary().unwrap();
     let ball_radius = Ball::calc_radius(window.width());
 
-    let size = Vec2::new(window.width() - ball_radius, window.height() - ball_radius);
+    let size = Vec2::new(window.width() - ball_radius, window.height() - UI_HEIGHT - ball_radius);
     let inner_size = Vec3::new(size.x - ball_radius, size.y - ball_radius, 1.0);
+    let translation = Vec3::new(0.0, -UI_HEIGHT/2.0, 1.0);
 
     commands.spawn_bundle(SpriteBundle {
         sprite: Sprite {
@@ -36,7 +37,7 @@ fn setup_court(mut commands: Commands, windows: Res<Windows>) {
             ..default()
         },
         transform: Transform {
-            translation: Vec2::ZERO.extend(1.0),
+            translation,
             scale: size.extend(1.0),
             ..default()
         },
@@ -50,7 +51,7 @@ fn setup_court(mut commands: Commands, windows: Res<Windows>) {
                 ..default()
             },
             transform: Transform {
-                translation: Vec2::ZERO.extend(1.0),
+                translation,
                 scale: inner_size,
                 ..default()
             },

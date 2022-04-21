@@ -19,6 +19,7 @@ mod prelude {
 }
 
 pub const SIZE_FACTOR: f32 = 42.0;
+pub const UI_HEIGHT: f32 = 66.0;
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum GameState {
@@ -82,6 +83,9 @@ impl Velocity {
     }
 }
 
+#[derive(Component)]
+pub struct Scoreboard;
+
 fn main() {
     App::new()
         .insert_resource(Msaa { samples: 4 })
@@ -89,6 +93,8 @@ fn main() {
         .insert_resource(WindowDescriptor {
             title: "Pong".to_string(),
             present_mode: PresentMode::Fifo,
+            width: 1200.0,
+            height: 800.0,
             ..default()
         })
         .add_plugins(DefaultPlugins)
@@ -107,8 +113,49 @@ fn main() {
         .run();
 }
 
-fn setup_camera(mut commands: Commands) {
+fn setup_camera(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+    commands.spawn_bundle(UiCameraBundle::default());
+    let font = asset_server.load("fonts/FiraMono-Medium.ttf");
+    let text_style = TextStyle {
+        font,
+        font_size: 60.0,
+        color: Color::WHITE,
+    };
+    commands
+        .spawn_bundle(NodeBundle {
+            style: Style {
+                size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
+                position_type: PositionType::Absolute,
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::FlexEnd,
+                ..Default::default()
+            },
+            color: UiColor::from(Color::NONE),
+            ..Default::default()
+        })
+        .with_children(|parent| {
+            parent.spawn_bundle(TextBundle {
+                text: Text {
+                    sections: vec![
+                        TextSection {
+                            value: "0".to_string(),
+                            style: text_style.clone(),
+                        },
+                        TextSection {
+                            value: " | ".to_string(),
+                            style: text_style.clone(),
+                        },
+                        TextSection {
+                            value: "0".to_string(),
+                            style: text_style.clone(),
+                        },
+                    ],
+                    ..default()
+                },
+                ..default()
+            }).insert(Scoreboard);
+        });
 }
 
 fn paddle_ball_collisions(
