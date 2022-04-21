@@ -1,3 +1,5 @@
+use rand::Rng;
+
 use bevy::{
     prelude::*,
     sprite::collide_aabb::{collide, Collision},
@@ -63,6 +65,23 @@ pub struct Velocity {
     y: f32,
 }
 
+impl Velocity {
+    pub fn random() -> Velocity {
+        let mut rng = rand::thread_rng();
+        let mut x = rng.gen_range(200.0..400.0);
+        if rng.gen_bool(0.5) {
+            x *= -1.0;
+        }
+
+        let mut y = rng.gen_range(80.0..300.0);
+        if rng.gen_bool(0.5) {
+            y *= -1.0;
+        }
+
+        Velocity { x, y }
+    }
+}
+
 fn main() {
     App::new()
         .insert_resource(Msaa { samples: 4 })
@@ -76,7 +95,7 @@ fn main() {
         .add_plugin(BallPlugin)
         .add_plugin(CourtPlugin)
         .add_plugin(PlayerPlugin)
-        .add_state(GameState::Playing)
+        .add_state(GameState::Serving)
         .add_startup_system(setup_camera)
         .add_event::<CollisionEvent>()
         .add_event::<ScoredEvent>()

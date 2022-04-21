@@ -101,7 +101,7 @@ fn setup_ball(mut commands: Commands, windows: Res<Windows>) {
             blink_timer: Timer::from_seconds(0.25, false),
             reset_timer: Timer::from_seconds(2.0, false)
         })
-        .insert(Velocity { x: 200.0, y: 80.0 })
+        .insert(Velocity::random())
         .insert(Visibility { is_visible: true })
         .insert(name)
         .insert(player)
@@ -203,8 +203,11 @@ fn serve_ball(
 ) {
     let (mut ball, mut velocity, mut visiblity) = ball_q.single_mut();
     if keys.just_released(KeyCode::Space) {
-        velocity.x = velocity.x.clamp(-200.0,200.0);
-        velocity.y = velocity.y.clamp(-200.0,200.0);
+        let was_negative = velocity.x < 0.0;
+        *velocity = Velocity::random();
+        if (velocity.x < 0.0) != was_negative {
+            velocity.x *= -1.0;
+        }
         ball.blink_timer.pause();
         visiblity.is_visible = true;
         state.set(GameState::Playing).unwrap();
