@@ -4,11 +4,17 @@ pub struct CourtPlugin;
 
 impl Plugin for CourtPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .add_startup_system(setup_court)
+        app.add_startup_system(setup_court)
+            .add_system_set(
+                SystemSet::on_update(GameState::Resetting)
+                    .with_system(court_collisions),
+            )
+            .add_system_set(
+                SystemSet::on_update(GameState::Serving)
+                    .with_system(court_collisions),
+            )
             .add_system_set(
                 SystemSet::on_update(GameState::Playing)
-                    .with_run_criteria(FixedTimestep::step(1.0 / 60.0))
                     .with_system(court_collisions.after(ball_movement)),
             );
     }
@@ -79,25 +85,19 @@ fn court_collisions(
         let adjusted_bottom = court_bottom + bbox.height / 2.0;
 
         let mut location = Vec2::ZERO;
-        if let Some(mut ball) = opt_ball {
+        if let Some(_ball) = opt_ball {
             if transform.translation.x > adjusted_right {
                 transform.translation.x = adjusted_right;
                 location.x = bbox.width / 2.0;
-                if ball.is_active {
-                    ball.is_active = false;
-                    scored_event.send(ScoredEvent {
-                        player: Player::Left,
-                    });
-                }
+                scored_event.send(ScoredEvent {
+                    player: Player::Left,
+                });
             } else if transform.translation.x < adjusted_left {
                 transform.translation.x = adjusted_left;
                 location.x = -bbox.width / 2.0;
-                if ball.is_active {
-                    ball.is_active = false;
-                    scored_event.send(ScoredEvent {
-                        player: Player::Right,
-                    });
-                }
+                scored_event.send(ScoredEvent {
+                    player: Player::Right,
+                });
             }
         }
 

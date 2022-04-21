@@ -1,5 +1,4 @@
 use bevy::{
-    core::FixedTimestep,
     prelude::*,
     sprite::collide_aabb::{collide, Collision},
     window::PresentMode,
@@ -21,7 +20,10 @@ pub const SIZE_FACTOR: f32 = 42.0;
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum GameState {
-    Playing
+    Resetting,
+    Serving,
+    Playing,
+    GameOver
 }
 
 pub struct CollisionEvent {
@@ -79,7 +81,6 @@ fn main() {
         .add_event::<ScoredEvent>()
         .add_system_set(
             SystemSet::on_update(GameState::Playing)
-                .with_run_criteria(FixedTimestep::step(1.0 / 60.0))
                 .with_system(paddle_control)
                 .with_system(paddle_ball_collisions.after(ball_movement)),
         )

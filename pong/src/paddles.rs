@@ -8,8 +8,16 @@ impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_startup_system(setup_paddles)
             .add_system_set(
+                SystemSet::on_update(GameState::Serving)
+                    .with_system(paddle_control)
+            )
+            .add_system_set(
+                SystemSet::on_update(GameState::Resetting)
+                    .with_system(player_scored)
+                    .with_system(paddle_control)
+            )
+            .add_system_set(
                 SystemSet::on_update(GameState::Playing)
-                    .with_run_criteria(FixedTimestep::step(1.0 / 60.0))
                     .with_system(player_scored)
                     .with_system(paddle_control)
             );
@@ -150,16 +158,17 @@ pub fn paddle_control(
 
 fn player_scored(
     mut score_q: Query<(&mut Score, &Player)>,
-    mut ball_q: Query<&mut Ball>,
     mut score_event: EventReader<ScoredEvent>,
+    mut state: ResMut<State<GameState>>,
 ) {
     for scored in score_event.iter() {
-        let mut ball = ball_q.single_mut();
         for (mut score, player) in score_q.iter_mut() {
             if *player == scored.player {
-                score.0 += 1;
-                ball.is_active = true;
-                println!("{:?}: {}", *player, score.0);
+                if *state.current() != GameState::Resetting {
+                    score.0 += 1;
+                    state.set(GameState::Resetting).unwrap();
+                    println!("{:?}: {}", *player, score.0);
+                }
             }
         }
     }
