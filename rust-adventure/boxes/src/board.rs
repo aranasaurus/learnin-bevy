@@ -1,7 +1,8 @@
+use crate::colors;
 use bevy::prelude::*;
 
-pub const TILE_SIZE: f32 = 40.0;
-pub const TILE_SPACER: f32 = 10.0;
+const TILE_SIZE: f32 = 40.0;
+const TILE_SPACER: f32 = 10.0;
 
 #[derive(Component)]
 pub struct Board {
@@ -24,10 +25,35 @@ impl Board {
         offset + f32::from(pos) * TILE_SIZE + f32::from(pos + 1) * TILE_SPACER
     }
 
-    pub fn sprite_size(&self) -> Vec2 {
-        Vec2 {
+    pub fn make_board_sprite(&self) -> SpriteBundle {
+        let sprite_size = Vec2 {
             x: self.physical_size,
             y: self.physical_size,
+        };
+
+        SpriteBundle {
+            sprite: Sprite {
+                color: colors::BOARD,
+                custom_size: Some(sprite_size),
+                ..default()
+            },
+            ..default()
+        }
+    }
+
+    pub fn make_tile_sprite(&self, tile: (u8, u8)) -> SpriteBundle {
+        SpriteBundle {
+            sprite: Sprite {
+                color: colors::TILE_PLACEHOLDER,
+                custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
+                ..default()
+            },
+            transform: Transform::from_xyz(
+                self.cell_position_to_physical(tile.0),
+                self.cell_position_to_physical(tile.1),
+                1.0,
+            ),
+            ..default()
         }
     }
 }
