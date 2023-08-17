@@ -10,6 +10,12 @@ pub struct Board {
     pub physical_size: f32,
 }
 
+#[derive(Component)]
+pub struct Position {
+    pub x: u8,
+    pub y: u8,
+}
+
 impl Board {
     pub fn new(size: u8) -> Self {
         let physical_size = f32::from(size) * TILE_SIZE + f32::from(size + 1) * TILE_SPACER;
@@ -41,16 +47,16 @@ impl Board {
         }
     }
 
-    pub fn make_tile_sprite(&self, tile: (u8, u8)) -> SpriteBundle {
+    pub fn make_tile_sprite(&self, tile: &Position, color: Color) -> SpriteBundle {
         SpriteBundle {
             sprite: Sprite {
-                color: colors::TILE_PLACEHOLDER,
+                color,
                 custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
                 ..default()
             },
             transform: Transform::from_xyz(
-                self.cell_position_to_physical(tile.0),
-                self.cell_position_to_physical(tile.1),
+                self.cell_position_to_physical(tile.x),
+                self.cell_position_to_physical(tile.y),
                 1.0,
             ),
             ..default()
