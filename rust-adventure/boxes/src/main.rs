@@ -1,5 +1,5 @@
 use crate::board::Board;
-use bevy::prelude::*;
+use bevy::{prelude::*, window::WindowResolution};
 use board::Position;
 use itertools::Itertools;
 use rand::prelude::*;
@@ -18,6 +18,9 @@ fn main() {
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
                 title: "boxes.rs".to_string(),
+                // Comment these two out when not working on the laptop...
+                resolution: WindowResolution::new(574.0, 326.0),
+                position: WindowPosition::new(IVec2::new(1732, 1162)),
                 ..default()
             }),
             ..default()
