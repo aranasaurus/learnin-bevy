@@ -12,6 +12,9 @@ struct Points {
     value: u32,
 }
 
+#[derive(Component)]
+struct TileText;
+
 fn main() {
     App::new()
         .insert_resource(ClearColor(Color::hex("#1f2638").unwrap()))
@@ -29,6 +32,7 @@ fn main() {
             Startup,
             (setup, spawn_board, apply_deferred, spawn_tiles).chain(),
         )
+        .add_systems(Update, render_tile_points)
         .run();
 }
 
@@ -65,7 +69,40 @@ fn spawn_tiles(mut commands: Commands, query_board: Query<&Board>) {
         let pos = Position { x: *x, y: *y };
         commands
             .spawn(board.make_tile_sprite(&pos, colors::TILE))
+            .with_children(|builder| {
+                builder
+                    .spawn(Text2dBundle {
+                        text: Text::from_section(
+                            "x",
+                            TextStyle {
+                                font_size: 40.0,
+                                color: Color::BLACK,
+                                ..default()
+                            },
+                        )
+                        .with_alignment(TextAlignment::Center),
+                        transform: Transform::from_xyz(0.0, 0.0, 1.0),
+                        ..default()
+                    })
+                    .insert(TileText);
+            })
             .insert(Points { value: 2 })
             .insert(pos);
+    }
+}
+
+fn render_tile_points(
+    mut texts: Query<&mut Text, With<TileText>>,
+    tiles: Query<(&Points, &Children)>,
+) {
+    for (points, children) in tiles.iter() {
+        if let Some(entity) = children.first() {
+            let mut text = texts.get_mut(*entity).expect("expected Text to exist");
+            let mut text_section = text
+                .sections
+                .first_mut()
+                .expect("expect first section to be accessible as mutable");
+            text_section.value = points.value.to_string()
+        }
     }
 }
